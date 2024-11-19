@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func 
 from src.db import models, schemas
-
+from src.db.models import Contract 
 
 # 사용자 CRUD
 def get_user_by_email(db: Session, email: str):
@@ -35,7 +36,13 @@ def delete_contract(db: Session, contract_id: int):
         db.delete(contract)
         db.commit()
     return contract
-
+#월간 구독료 총합
+def get_total_monthly_cost(db: Session, user_id: int) -> float:
+    """
+    특정 사용자의 모든 계약의 monthly_cost 합산 반환.
+    """
+    total_cost = db.query(func.sum(Contract.monthly_cost)).filter(Contract.user_id == user_id).scalar()
+    return total_cost or 0.0
 
 # 알림 CRUD
 def create_notification(db: Session, notification: schemas.NotificationBase):

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, date
-
+from typing import Union 
 # 사용자 스키마
 class UserBase(BaseModel):
     email: EmailStr
@@ -20,10 +20,10 @@ class UserResponse(UserBase):
 class ContractBase(BaseModel):
     service_name: str
     monthly_cost: float
-    start_date: date | None
+    start_date: Union[date, None]  # 변경
     end_date: date
     auto_renew: bool = False
-    notes: str | None
+    notes: Union[str, None] = None  # 변경
 
 class ContractCreate(ContractBase):
     pass
@@ -33,7 +33,7 @@ class ContractResponse(ContractBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # orm_mode 대신 변경
 
 
 # 알림 스키마
