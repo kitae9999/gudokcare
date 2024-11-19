@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func 
 from src.db import models, schemas
 from src.db.models import Contract 
-
+from datetime import date, timedelta
 # 사용자 CRUD
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
@@ -62,3 +62,29 @@ def mark_notification_as_sent(db: Session, notification_id: int):
         db.commit()
         db.refresh(notification)
     return notification
+
+def get_contracts_for_notifications(db: Session, today: date):
+    """
+    알림 조건에 맞는 계약 가져오기: 만료일 30일, 7일, 3일 전
+    """
+    contracts = db.query(Contract).filter(
+        Contract.is_notification_enabled == True,
+        Contract.end_date.in_([
+            today + timedelta(days=30),
+            today + timedelta(days=7),
+            today + timedelta(days=3)
+        ])
+    ).all()
+    return contracts
+
+def update_notification_status(db: Session, contract_id: int, is_enabled: bool):
+    """
+    계약의 알림 활성화/비활성화 업데이트
+    """
+    contract = db.query(Contract).filter(Contract.id == contract_id).first()
+    if not contract:
+        return None
+    contract.is_notification_enabled = is_enabled
+    db.commit()
+    db.refresh(contract)
+    return contract

@@ -57,3 +57,17 @@ def delete_contract(contract_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Contract not found")
     crud.delete_contract(db=db, contract_id=contract_id)
     return {"message": "Contract deleted successfully"}
+
+@router.put("/{contract_id}/notification", response_model=schemas.ContractResponse)
+def update_notification_status(
+    contract_id: int,
+    is_enabled: bool,
+    db: Session = Depends(get_db)
+):
+    """
+    계약의 알림 활성화/비활성화 설정
+    """
+    contract = crud.update_notification_status(db=db, contract_id=contract_id, is_enabled=is_enabled)
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return contract

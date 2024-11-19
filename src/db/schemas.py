@@ -24,6 +24,7 @@ class ContractBase(BaseModel):
     end_date: date
     auto_renew: bool = False
     notes: Union[str, None] = None  # 변경
+    is_notification_enabled: bool = True  # 기본값: Truex
 
 class ContractCreate(ContractBase):
     pass

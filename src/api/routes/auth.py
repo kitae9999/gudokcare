@@ -14,3 +14,16 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     hashed_password = get_password_hash(user.password)
     new_user = crud.create_user(db, schemas.UserCreate(email=user.email, password=hashed_password))
     return new_user
+
+@router.post("/register-token")
+def register_firebase_token(user_id: int, firebase_token: str, db: Session = Depends(get_db)):
+    """
+    사용자 디바이스 토큰 등록
+    """
+    user = crud.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.firebase_token = firebase_token
+    db.commit()
+    db.refresh(user)
+    return {"message": "Firebase token registered successfully"}
