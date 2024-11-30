@@ -1,17 +1,49 @@
 <script>
-  import { subscriptions } from "$lib/stores/subscriptions";
+  import { goto } from "$app/navigation";
+
   let name = "";
   let price = 0;
   let startDate = "";
   let endDate = "";
   let autoRenewal = false;
 
-  const addSubscription = () => {
-    subscriptions.update((subs) => [
-      ...subs,
-      { id: Date.now(), name, price, startDate, endDate, autoRenewal, usedToday: false }
-    ]);
-    window.location.href = "/";
+  const addSubscription = async () => {
+    try {
+      const token = localStorage.getItem("token"); // 토큰 가져오기
+      const userId = localStorage.getItem("user_id"); // user_id 가져오기
+
+      if (!token || !userId) {
+        alert("로그인이 필요합니다.");
+        goto("/");
+        return;
+      }
+
+      const response = await fetch(`http://127.0.0.1:8000/contracts/create?user_id=${userId}`, { // user_id 동적 추가
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // 인증 토큰
+        },
+        body: JSON.stringify({
+          service_name: name, // 백엔드에 맞게 필드명 수정
+          monthly_cost: parseFloat(price), // 숫자로 변환
+          start_date: startDate, // YYYY-MM-DD 형식
+          end_date: endDate || null, // 없으면 null로 전달
+          auto_renew: autoRenewal, // autoRenewal -> auto_renew로 수정
+        }),
+      });
+
+      if (response.ok) {
+        alert("구독이 추가되었습니다!");
+        goto("/main"); // 메인 페이지로 리다이렉트
+      } else {
+        const error = await response.json();
+        alert(`오류: ${error.detail}`);
+      }
+    } catch (err) {
+      console.error("구독 추가 중 오류 발생:", err);
+      alert("서버에 연결할 수 없습니다. 나중에 다시 시도해주세요.");
+    }
   };
 </script>
 

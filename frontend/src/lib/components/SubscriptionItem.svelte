@@ -1,7 +1,8 @@
 <script>
+    import { createEventDispatcher } from 'svelte';
+    const dispatch = createEventDispatcher();
     export let subscription;
-    export let onToggleUsage;
-    export let onDelete;
+  
   
     const getDaysLeftClass = (daysLeft) => {
       if (daysLeft <= 7) {
@@ -12,13 +13,16 @@
         return "days-left-safe";
       }
     };
-  
-    let isToggled = subscription.usedToday;
-  
-    const toggle = () => {
-      isToggled = !isToggled;
-      onToggleUsage(subscription.id);
+    const handleDelete = () => {
+      dispatch('delete', { id: subscription.id });
     };
+
+    let isToggled = subscription.usedToday;
+    const toggle = () => {
+    isToggled = !isToggled;
+    dispatch('toggleUsage', { id: subscription.id, used: isToggled });
+  };
+    
   </script>
   
   <div class="subscription-item">
@@ -43,7 +47,7 @@
         </label>
   
         <!-- 삭제 버튼 -->
-        <button class="delete-button" on:click={() => onDelete(subscription.id)}>
+        <button class="delete-button" on:click={handleDelete}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="22" viewBox="0 0 20 22" fill="none">
             <path
               d="M16 20H4V6H2V19.7C2 20.8 2.9 22 4 22H16C17.1 22 18 20.8 18 19.7V6H16V20ZM13 2V0H7V2H0V4H20V2H13ZM7 8V18H9V8H7ZM11 8V18H13V8H11Z"
